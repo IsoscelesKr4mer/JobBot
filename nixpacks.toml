@@ -1,8 +1,6 @@
 [phases.setup]
-nixPkgs = [
-  'nodejs_22',
-  'npm-9_x',
-  'python3',
+nixPkgs = ['nodejs_22', 'python3']
+aptPkgs = [
   'libnss3',
   'libatk1.0-0',
   'libatk-bridge2.0-0',
