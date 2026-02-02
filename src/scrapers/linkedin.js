@@ -68,11 +68,25 @@ export async function scrapeLinkedIn() {
           const linkElement = card.querySelector('a.base-card__full-link');
           const timeElement = card.querySelector('time');
 
+          // Try multiple selectors for salary
+          let salary = null;
+          const salaryElement = card.querySelector('.job-search-card__salary-info') ||
+                               card.querySelector('[class*="salary"]') ||
+                               card.querySelector('.base-search-card__metadata');
+          if (salaryElement) {
+            const salaryText = salaryElement.textContent.trim();
+            // Only use if it looks like a salary (contains $, numbers, or salary keywords)
+            if (salaryText.match(/\$|k|salary|year|hour|compensation/i)) {
+              salary = salaryText;
+            }
+          }
+
           if (titleElement && companyElement && linkElement) {
             results.push({
               title: titleElement.textContent.trim(),
               company: companyElement.textContent.trim(),
               location: locationElement?.textContent.trim() || 'Remote',
+              salary: salary,
               url: linkElement.href.split('?')[0], // Clean URL
               source: 'LinkedIn',
               postedAt: timeElement?.getAttribute('datetime') || new Date().toISOString(),

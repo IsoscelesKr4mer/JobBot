@@ -70,9 +70,24 @@ export async function scrapeIndeed() {
           const titleElement = card.querySelector('h2.jobTitle span[title]');
           const companyElement = card.querySelector('[data-testid="company-name"]');
           const locationElement = card.querySelector('[data-testid="text-location"]');
-          const salaryElement = card.querySelector('[data-testid="attribute_snippet_testid"]');
           const linkElement = card.querySelector('h2.jobTitle a');
           const dateElement = card.querySelector('[data-testid="myJobsStateDate"]');
+
+          // Try multiple selectors for salary with better targeting
+          let salary = null;
+          const salaryElement = card.querySelector('[data-testid="attribute_snippet_testid"]') ||
+                               card.querySelector('.salary-snippet-container') ||
+                               card.querySelector('.attribute_snippet') ||
+                               card.querySelector('[class*="salary"]');
+
+          if (salaryElement) {
+            const salaryText = salaryElement.textContent.trim();
+            // Filter out non-salary snippets (benefits, etc.) and validate it's actually salary info
+            if (salaryText && salaryText.match(/\$|k\b|year|hour|salary|compensation/i)) {
+              // Clean up the salary text
+              salary = salaryText.replace(/\s+/g, ' ').trim();
+            }
+          }
 
           if (titleElement && companyElement && linkElement) {
             const jobKey = linkElement.getAttribute('data-jk') || linkElement.id || '';
@@ -82,7 +97,7 @@ export async function scrapeIndeed() {
               title: titleElement.textContent.trim(),
               company: companyElement.textContent.trim(),
               location: locationElement?.textContent.trim() || 'Remote',
-              salary: salaryElement?.textContent.trim() || null,
+              salary: salary,
               url: jobUrl,
               source: 'Indeed',
               postedAt: dateElement?.textContent.trim() || 'Recently',
