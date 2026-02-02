@@ -19,17 +19,16 @@ async function runJobSearch() {
   console.log(`\n⏰ [${new Date().toLocaleTimeString()}] Starting job search...`);
   
   try {
-    // Scrape both platforms in parallel
-    const [linkedInJobs, indeedJobs] = await Promise.all([
-      scrapeLinkedIn().catch(err => {
-        console.error('❌ LinkedIn scraper error:', err.message);
-        return [];
-      }),
-      scrapeIndeed().catch(err => {
-        console.error('❌ Indeed scraper error:', err.message);
-        return [];
-      })
-    ]);
+    // Scrape platforms sequentially to avoid memory issues
+    const linkedInJobs = await scrapeLinkedIn().catch(err => {
+      console.error('❌ LinkedIn scraper error:', err.message);
+      return [];
+    });
+
+    const indeedJobs = await scrapeIndeed().catch(err => {
+      console.error('❌ Indeed scraper error:', err.message);
+      return [];
+    });
 
     const allJobs = [...linkedInJobs, ...indeedJobs];
     console.log(`📊 Found ${allJobs.length} total jobs (${linkedInJobs.length} from LinkedIn, ${indeedJobs.length} from Indeed)`);
